@@ -15,7 +15,7 @@ const adminRoutes = require("./routes/adminRoutes"); // Import admin routes
 const chatbotRoutes = require("./routes/chatbotRoutes"); // Import chatbot routes
 const recommendationRoutes = require("./routes/recommendationRoutes"); // Import recommendation routes
 const savingsGoalRoutes = require("./routes/savingsGoalRoutes"); // Import savings goal routes
-// const documentRoutes = require("./routes/documentRoutes"); // Import document routes
+const documentRoutes = require("./routes/documentRoutes"); // Import document routes
 const fs = require("fs");
 const path = require("path");
 const cron = require("./cron"); // Import cron
@@ -140,7 +140,7 @@ app.use("/api/recommendations", recommendationRoutes);
 app.use("/api/savings-goals", savingsGoalRoutes); // Register savings goal routes
 
 // Register document routes
-// app.use("/api/documents", documentRoutes); // Add document routes
+app.use("/api/documents", documentRoutes); // Add document routes
 
 // Servir le dossier uploads en statique
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
