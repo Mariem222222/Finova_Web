@@ -12,6 +12,7 @@ import {
   FaLock,
   FaTrash,
   FaExclamationTriangle,
+  FaInfoCircle,
 } from 'react-icons/fa';
 
 const UserProfile = () => {
@@ -28,12 +29,6 @@ const UserProfile = () => {
     twoFactorAuth: false,
     emailNotifications: false,
   });
-
-  const [passwords, setPasswords] = useState({
-    password: '',
-    confirmPassword: ''
-  });
-
   const [editing, setEditing] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [savedSuccessfully, setSavedSuccessfully] = useState(false);
@@ -105,6 +100,11 @@ const UserProfile = () => {
   // Handle profile update
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+
+    // Contrôle de saisie avant soumission
+    if (!validateForm()) {
+      return;
+    }
 
     const formData = new FormData();
     formData.append("firstName", profile.firstName);
@@ -276,81 +276,108 @@ const UserProfile = () => {
           )}
 
           {editing && (
-            <form onSubmit={handleProfileUpdate} className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <FormField
-                  label="First Name"
-                  type="text"
-                  value={profile.firstName}
-                  onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
-                  error={validationErrors.firstName}
-                  placeholder="Your first name"
-                />
-                <FormField
-                  label="Last Name"
-                  type="text"
-                  value={profile.lastName}
-                  onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
-                  error={validationErrors.lastName}
-                  placeholder="Your last name"
-                />
-              </div>
-              <FormField
-                label="Email"
-                type="email"
-                value={profile.email}
-                onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
-                error={validationErrors.email}
-                placeholder="your.email@example.com"
-              />
-              <FormField
-                label="Phone Number"
-                type="tel"
-                value={profile.phoneNumber}
-                onChange={(e) => setProfile(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                error={validationErrors.phoneNumber}
-                placeholder="+1 555 123 4567"
-              />
-              <FormField
-                label="Date of Birth"
-                type="date"
-                value={profile.dateOfBirth}
-                onChange={(e) => setProfile(prev => ({ ...prev, dateOfBirth: e.target.value }))}
-                error={validationErrors.dateOfBirth}
-              />
-
-              {/* Password fields */}
-              <div className="mt-8 mb-4 border-t pt-6">
-                <h3 className="text-xl font-semibold text-blue-900 mb-4 flex items-center">
-                  <FaLock className="mr-3 text-blue-600" /> Change Password
+            <form onSubmit={handleProfileUpdate} className="space-y-8 relative">
+              {/* Personal Info Section */}
+              <div className="bg-blue-50 rounded-xl p-6 mb-2 shadow-inner">
+                <h3 className="text-xl font-semibold text-blue-800 mb-4 flex items-center">
+                  <FaUser className="mr-2 text-blue-500" /> Personal Information
                 </h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <FormField
-                    label="Password"
-                    type="password"
-                    value={passwords.password}
-                    onChange={(e) => setPasswords(prev => ({ ...prev, password: e.target.value }))}
-                    error={validationErrors.password}
-                    placeholder="New password"
-                  />
-                  <FormField
-                    label="Confirm Password"
-                    type="password"
-                    value={passwords.confirmPassword}
-                    onChange={(e) => setPasswords(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    error={validationErrors.confirmPassword}
-                    placeholder="Confirm password"
-                  />
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* First Name */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="firstName"
+                      value={profile.firstName}
+                      onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
+                      className={`peer w-full p-4 pt-6 border rounded-lg focus:outline-none focus:ring-2 bg-white transition-all ${validationErrors.firstName ? 'border-red-400 focus:ring-red-400' : 'focus:ring-blue-400'} text-gray-900 font-medium`}
+                      placeholder=" "
+                      aria-invalid={!!validationErrors.firstName}
+                      aria-describedby="firstName-error"
+                    />
+                    <label htmlFor="firstName" className="absolute left-4 top-4 text-gray-500 text-base transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 bg-blue-50 px-1 pointer-events-none">First Name <span className="text-blue-400" title="Required">*</span></label>
+                    {validationErrors.firstName && (
+                      <span id="firstName-error" className="flex items-center text-red-500 text-xs mt-1"><FaTimesCircle className="mr-1" /> {validationErrors.firstName}</span>
+                    )}
+                  </div>
+                  {/* Last Name */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="lastName"
+                      value={profile.lastName}
+                      onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
+                      className={`peer w-full p-4 pt-6 border rounded-lg focus:outline-none focus:ring-2 bg-white transition-all ${validationErrors.lastName ? 'border-red-400 focus:ring-red-400' : 'focus:ring-blue-400'} text-gray-900 font-medium`}
+                      placeholder=" "
+                      aria-invalid={!!validationErrors.lastName}
+                      aria-describedby="lastName-error"
+                    />
+                    <label htmlFor="lastName" className="absolute left-4 top-4 text-gray-500 text-base transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 bg-blue-50 px-1 pointer-events-none">Last Name <span className="text-blue-400" title="Required">*</span></label>
+                    {validationErrors.lastName && (
+                      <span id="lastName-error" className="flex items-center text-red-500 text-xs mt-1"><FaTimesCircle className="mr-1" /> {validationErrors.lastName}</span>
+                    )}
+                  </div>
                 </div>
-                <p className="text-gray-500 text-sm mt-2">
-                  Leave blank if you don't want to change your password
-                </p>
+                {/* Email */}
+                <div className="relative mt-6">
+                  <input
+                    type="email"
+                    id="email"
+                    value={profile.email}
+                    onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                    className={`peer w-full p-4 pt-6 border rounded-lg focus:outline-none focus:ring-2 bg-white transition-all ${validationErrors.email ? 'border-red-400 focus:ring-red-400' : 'focus:ring-blue-400'} text-gray-900 font-medium`}
+                    placeholder=" "
+                    aria-invalid={!!validationErrors.email}
+                    aria-describedby="email-error"
+                  />
+                  <label htmlFor="email" className="absolute left-4 top-4 text-gray-500 text-base transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 bg-blue-50 px-1 pointer-events-none">Email <span className="text-blue-400" title="Required">*</span></label>
+                  <span className="absolute right-4 top-4" title="We'll never share your email."><FaInfoCircle className="text-blue-300" /></span>
+                  {validationErrors.email && (
+                    <span id="email-error" className="flex items-center text-red-500 text-xs mt-1"><FaTimesCircle className="mr-1" /> {validationErrors.email}</span>
+                  )}
+                </div>
+                {/* Phone Number */}
+                <div className="relative mt-6">
+                  <input
+                    type="tel"
+                    id="phoneNumber"
+                    value={profile.phoneNumber}
+                    onChange={(e) => setProfile(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                    className={`peer w-full p-4 pt-6 border rounded-lg focus:outline-none focus:ring-2 bg-white transition-all ${validationErrors.phoneNumber ? 'border-red-400 focus:ring-red-400' : 'focus:ring-blue-400'} text-gray-900 font-medium`}
+                    placeholder=" "
+                    aria-invalid={!!validationErrors.phoneNumber}
+                    aria-describedby="phoneNumber-error"
+                  />
+                  <label htmlFor="phoneNumber" className="absolute left-4 top-4 text-gray-500 text-base transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 bg-blue-50 px-1 pointer-events-none">Phone Number</label>
+                  <span className="absolute right-4 top-4" title="Optional, for account recovery."><FaInfoCircle className="text-blue-300" /></span>
+                  {validationErrors.phoneNumber && (
+                    <span id="phoneNumber-error" className="flex items-center text-red-500 text-xs mt-1"><FaTimesCircle className="mr-1" /> {validationErrors.phoneNumber}</span>
+                  )}
+                </div>
+                {/* Date of Birth */}
+                <div className="relative mt-6">
+                  <input
+                    type="date"
+                    id="dateOfBirth"
+                    value={profile.dateOfBirth}
+                    onChange={(e) => setProfile(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                    className={`peer w-full p-4 pt-6 border rounded-lg focus:outline-none focus:ring-2 bg-white transition-all ${validationErrors.dateOfBirth ? 'border-red-400 focus:ring-red-400' : 'focus:ring-blue-400'} text-gray-900 font-medium`}
+                    placeholder=" "
+                    aria-invalid={!!validationErrors.dateOfBirth}
+                    aria-describedby="dob-error"
+                  />
+                  <label htmlFor="dateOfBirth" className="absolute left-4 top-4 text-gray-500 text-base transition-all peer-focus:-top-2 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 bg-blue-50 px-1 pointer-events-none">Date of Birth <span className="text-blue-400" title="Required">*</span></label>
+                  <span className="absolute right-4 top-4" title="You must be at least 18 years old."><FaInfoCircle className="text-blue-300" /></span>
+                  {validationErrors.dateOfBirth && (
+                    <span id="dob-error" className="flex items-center text-red-500 text-xs mt-1"><FaTimesCircle className="mr-1" /> {validationErrors.dateOfBirth}</span>
+                  )}
+                </div>
               </div>
-
-              <div className="flex space-x-4">
+              {/* Action Bar */}
+              <div className="flex space-x-4 justify-end sticky bottom-0 bg-gradient-to-r from-blue-100 to-purple-100 p-4 rounded-xl shadow-lg z-10">
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 transition flex items-center"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-6 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition transform hover:scale-105 flex items-center focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                   <FaSave className="mr-2" /> Save
                 </button>
@@ -361,7 +388,7 @@ const UserProfile = () => {
                     setPasswords({ password: '', confirmPassword: '' });
                     setValidationErrors({});
                   }}
-                  className="bg-gray-200 text-gray-700 py-3 px-6 rounded-md hover:bg-gray-300 transition"
+                  className="bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-bold hover:bg-gray-300 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400"
                 >
                   Cancel
                 </button>
@@ -451,8 +478,8 @@ const UserProfile = () => {
                 onClick={handleDeleteAccount}
                 disabled={deleteConfirmation.toLowerCase() !== 'delete' || isDeleting}
                 className={`px-4 py-2 rounded-lg flex items-center ${deleteConfirmation.toLowerCase() === 'delete' && !isDeleting
-                    ? 'bg-red-600 text-white hover:bg-red-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-red-600 text-white hover:bg-red-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } transition`}
               >
                 {isDeleting ? (

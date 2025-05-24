@@ -76,7 +76,10 @@ router.get("/current-savings", authMiddleware, async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const userId = req.user.userId;
-    const goals = await SavingsGoal.find({ userId, status: { $ne: 'deleted' } });
+    const goals = await SavingsGoal.find({ 
+      userId, 
+      status: 'pending'  // Ne récupère que les objectifs en cours
+    });
 
     const currentSavings = await calculateCurrentSavings(userId);
 

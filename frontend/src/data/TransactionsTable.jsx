@@ -186,32 +186,30 @@ export default function TransactionsTable() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg mt-6 overflow-hidden">
+    <div className="bg-gradient-to-br from-blue-50 via-white to-purple-100 min-h-screen rounded-xl shadow-lg mt-6 overflow-hidden p-2 md:p-6">
       {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl mb-4 animate-fade-in" role="alert">
           <span className="block sm:inline">{successMessage}</span>
         </div>
       )}
-      <div className="flex items-center justify-between p-6 border-b">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 border-b bg-white/80 rounded-t-2xl shadow">
         <div className="flex items-center">
-          <FaWallet className="text-indigo-600 mr-3 text-xl" />
-          <h2 className="text-xl font-semibold text-gray-800">Transaction History</h2>
+          <FaWallet className="text-indigo-600 mr-3 text-2xl" />
+          <h2 className="text-2xl font-extrabold text-blue-800 tracking-tight">Transaction History</h2>
         </div>
-
-        <div className="flex items-center space-x-4">
-          <div className="relative">
+        <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4 w-full md:w-auto">
+          <div className="relative w-full md:w-auto">
             <input
               type="text"
               placeholder="Search transactions..."
-              className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="pl-10 pr-4 py-2 border border-blue-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 bg-blue-50/50 text-gray-800 w-full md:w-56"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <FaSearch className="absolute left-3 top-3 text-gray-400" />
+            <FaSearch className="absolute left-3 top-3 text-blue-400" />
           </div>
-
           <select
-            className="py-2 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="py-2 px-3 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300 bg-purple-50/50 text-gray-800"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
           >
@@ -219,10 +217,9 @@ export default function TransactionsTable() {
             <option value="income">Income</option>
             <option value="expense">Expense</option>
           </select>
-
           <button
             onClick={exportToCSV}
-            className="flex items-center bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+            className="flex items-center bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-xl font-bold shadow hover:from-blue-600 hover:to-purple-600 transition"
           >
             <FaFileDownload className="mr-2" /> Export
           </button>
@@ -230,84 +227,63 @@ export default function TransactionsTable() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-sm text-gray-500 mb-1">Total Income</div>
-          <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(filteredTransactions.reduce((sum, tx) =>
-              tx.type === 'income' ? sum + parseFloat(tx.amount) : sum, 0))}
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 bg-transparent">
+        <div className="bg-gradient-to-br from-blue-100 to-green-100 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center transform transition hover:scale-105">
+          <div className="text-green-500 text-3xl mb-2"><svg xmlns='http://www.w3.org/2000/svg' className='inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor' width='32' height='32'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v8m0 0l-3-3m3 3l3-3' /></svg></div>
+          <div className="text-sm text-blue-700 mb-1 font-semibold">Total Income</div>
+          <div className="text-3xl font-extrabold text-blue-900">{formatCurrency(filteredTransactions.reduce((sum, tx) => tx.type === 'income' ? sum + parseFloat(tx.amount) : sum, 0))}</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-sm text-gray-500 mb-1">Total Expenses</div>
-          <div className="text-2xl font-bold text-red-600">
-            {formatCurrency(filteredTransactions.reduce((sum, tx) =>
-              tx.type === 'expense' ? sum + parseFloat(tx.amount) : sum, 0))}
-          </div>
+        <div className="bg-gradient-to-br from-purple-100 to-red-100 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center transform transition hover:scale-105">
+          <div className="text-red-500 text-3xl mb-2"><svg xmlns='http://www.w3.org/2000/svg' className='inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor' width='32' height='32'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 16V8m0 0l-3 3m3-3l3 3' /></svg></div>
+          <div className="text-sm text-purple-700 mb-1 font-semibold">Total Expenses</div>
+          <div className="text-3xl font-extrabold text-purple-900">{formatCurrency(filteredTransactions.reduce((sum, tx) => tx.type === 'expense' ? sum + parseFloat(tx.amount) : sum, 0))}</div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="text-sm text-gray-500 mb-1">Net Balance</div>
-          <div className="text-2xl font-bold text-indigo-600">
-            {formatCurrency(filteredTransactions.reduce((sum, tx) =>
-              tx.type === 'income' ? sum + parseFloat(tx.amount) : sum - parseFloat(tx.amount), 0))}
-          </div>
+        <div className="bg-gradient-to-br from-indigo-100 to-blue-100 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center transform transition hover:scale-105">
+          <div className="text-indigo-500 text-3xl mb-2"><svg xmlns='http://www.w3.org/2000/svg' className='inline-block' fill='none' viewBox='0 0 24 24' stroke='currentColor' width='32' height='32'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M16 12H8m0 0l3-3m-3 3l3 3' /></svg></div>
+          <div className="text-sm text-indigo-700 mb-1 font-semibold">Net Balance</div>
+          <div className="text-3xl font-extrabold text-indigo-900">{formatCurrency(filteredTransactions.reduce((sum, tx) => tx.type === 'income' ? sum + parseFloat(tx.amount) : sum - parseFloat(tx.amount), 0))}</div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <div className="overflow-x-auto bg-white/90 rounded-2xl shadow-xl mt-4">
+        <table className="w-full text-left border-collapse rounded-2xl overflow-hidden">
           <thead>
-            <tr className="border-b bg-gray-100">
-              <th
-                className="p-3 cursor-pointer hover:bg-gray-200 transition-colors"
-                onClick={() => handleSort('dateTime')}
-              >
+            <tr className="border-b bg-gradient-to-r from-blue-100 to-purple-100">
+              <th className="p-3 cursor-pointer hover:bg-blue-50 transition-colors rounded-tl-2xl" onClick={() => handleSort('dateTime')}>
                 <div className="flex items-center">
-                  <FaCalendarAlt className="mr-2 text-gray-500" />
+                  <FaCalendarAlt className="mr-2 text-blue-500" />
                   Date & Time
                   <SortIndicator field="dateTime" />
                 </div>
               </th>
-              <th
-                className="p-3 cursor-pointer hover:bg-gray-200 transition-colors"
-                onClick={() => handleSort('description')}
-              >
+              <th className="p-3 cursor-pointer hover:bg-blue-50 transition-colors" onClick={() => handleSort('description')}>
                 <div className="flex items-center">
                   Description
                   <SortIndicator field="description" />
                 </div>
               </th>
-              <th
-                className="p-3 cursor-pointer hover:bg-gray-200 transition-colors"
-                onClick={() => handleSort('amount')}
-              >
+              <th className="p-3 cursor-pointer hover:bg-blue-50 transition-colors" onClick={() => handleSort('amount')}>
                 <div className="flex items-center">
                   Amount
                   <SortIndicator field="amount" />
                 </div>
               </th>
-              <th
-                className="p-3 cursor-pointer hover:bg-gray-200 transition-colors"
-                onClick={() => handleSort('type')}
-              >
+              <th className="p-3 cursor-pointer hover:bg-blue-50 transition-colors" onClick={() => handleSort('type')}>
                 <div className="flex items-center">
                   Type
                   <SortIndicator field="type" />
                 </div>
               </th>
-              <th
-                className="p-3 cursor-pointer hover:bg-gray-200 transition-colors"
-                onClick={() => handleSort('category')}
-              >
+              <th className="p-3 cursor-pointer hover:bg-blue-50 transition-colors" onClick={() => handleSort('category')}>
                 <div className="flex items-center">
-                  <FaChartPie className="mr-2 text-gray-500" />
+                  <FaChartPie className="mr-2 text-purple-500" />
                   Category
                   <SortIndicator field="category" />
                 </div>
               </th>
               <th className="p-3">Status</th>
-              <th className="p-3">Actions</th>
+              <th className="p-3 rounded-tr-2xl">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -317,9 +293,7 @@ export default function TransactionsTable() {
                 return (
                   <tr
                     key={index}
-                    className={`border-b hover:bg-gray-50 transition-colors ${status === 'recent' ? 'bg-blue-50' :
-                      status === 'major' ? 'bg-green-50' : ''
-                      }`}
+                    className={`border-b transition-colors ${index % 2 === 0 ? 'bg-blue-50/30' : 'bg-purple-50/20'} hover:bg-blue-100/60 ${status === 'recent' ? 'ring-2 ring-blue-200' : status === 'major' ? 'ring-2 ring-green-200' : ''}`}
                   >
                     <td className="p-3 whitespace-nowrap">
                       {tx.dateTime
@@ -364,12 +338,12 @@ export default function TransactionsTable() {
                         tx.active ? (
                           <button
                             onClick={() => stopRecurringTransaction(tx._id)}
-                            className="px-4 py-2 rounded transition bg-red-500 text-white hover:bg-red-600"
+                            className="px-4 py-2 rounded-xl transition bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold shadow hover:from-red-600 hover:to-red-800"
                           >
                             Stop Recurring
                           </button>
                         ) : (
-                          <span className="px-4 py-2 rounded bg-gray-400 text-white cursor-not-allowed">
+                          <span className="px-4 py-2 rounded-xl bg-gray-400 text-white cursor-not-allowed">
                             Recurring Stopped
                           </span>
                         )
@@ -391,28 +365,26 @@ export default function TransactionsTable() {
 
       {/* Pagination */}
       {pageCount > 1 && (
-        <div className="flex justify-between items-center px-6 py-4 bg-gray-50 border-t">
-          <div className="text-sm text-gray-600">
+        <div className="flex flex-col md:flex-row justify-between items-center px-6 py-4 bg-gradient-to-r from-blue-100 to-purple-100 border-t rounded-b-2xl mt-2 gap-2">
+          <div className="text-sm text-gray-600 mb-2 md:mb-0">
             Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} of {filteredTransactions.length} transactions
           </div>
-          <div className="flex space-x-1">
+          <div className="flex flex-wrap gap-1">
             <button
               onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}
-              className="px-3 py-1 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 rounded-xl border border-blue-200 bg-white disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               First
             </button>
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 rounded-xl border border-blue-200 bg-white disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               Prev
             </button>
-
             {Array.from({ length: Math.min(5, pageCount) }, (_, i) => {
-              // Show pages around current page
               let pageNum;
               if (pageCount <= 5) {
                 pageNum = i + 1;
@@ -423,38 +395,46 @@ export default function TransactionsTable() {
               } else {
                 pageNum = currentPage - 2 + i;
               }
-
               return (
                 <button
                   key={i}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`px-3 py-1 rounded-md border ${currentPage === pageNum
-                    ? 'bg-indigo-600 text-white'
-                    : 'hover:bg-gray-100'
+                  className={`px-3 py-1 rounded-xl border border-blue-200 bg-white font-semibold ${currentPage === pageNum
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow'
+                    : 'hover:bg-blue-50'
                     }`}
                 >
                   {pageNum}
                 </button>
               );
             })}
-
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
               disabled={currentPage === pageCount}
-              className="px-3 py-1 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 rounded-xl border border-blue-200 bg-white disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               Next
             </button>
             <button
               onClick={() => setCurrentPage(pageCount)}
               disabled={currentPage === pageCount}
-              className="px-3 py-1 rounded-md border disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 rounded-xl border border-blue-200 bg-white disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
             >
               Last
             </button>
           </div>
         </div>
       )}
+      {/* Animation styles */}
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out;
+        }
+      `}</style>
     </div>
   );
 }

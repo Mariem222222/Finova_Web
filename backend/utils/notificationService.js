@@ -46,9 +46,14 @@ const createNotificationHTML = (title, message) => `
 `;
 
 async function checkGoalProgressAndNotify() {
-  try {
-    const goals = await SavingsGoal.find().populate('userId');
+  try {    console.log('🚀 Démarrage de la vérification des objectifs...');
+    const goals = await SavingsGoal.find({ status: { $ne: 'deleted' } }).populate('userId');
     console.log(`🔍 ${goals.length} objectifs analysés`);
+    
+    if (goals.length === 0) {
+      console.log('❌ Aucun objectif trouvé dans la base de données');
+      return;
+    }
 
     for (const goal of goals) {
       const user = goal.userId;
@@ -71,19 +76,26 @@ async function checkGoalProgressAndNotify() {
           )
         );
         goal.notified30Days = true;
-      }
-
-      // Notification accompli
+      }      // Notification accompli
       if ((goal.currentAmount >= goal.targetAmount || Date.now() > goal.targetDate) && !goal.closedNotified) {
-        await sendEmail(
-          user.email,
-          `🎉 Objectif "${goal.name}" atteint !`,
-          createNotificationHTML(
-            'Félicitations !',
-            `Vous avez atteint votre objectif d'épargne "${goal.name}" (${goal.targetAmount}€).`
-          )
-        );
-        goal.closedNotified = true;
+        console.log(`🎯 Objectif "${goal.name}" atteint pour l'utilisateur ${user.email}`);
+        console.log(`   Montant actuel: ${goal.currentAmount}€ / Objectif: ${goal.targetAmount}€`);
+        console.log(`   Date actuelle: ${new Date().toISOString()} / Date cible: ${new Date(goal.targetDate).toISOString()}`);
+        
+        try {
+          await sendEmail(
+            user.email,
+            `🎉 Objectif "${goal.name}" atteint !`,
+            createNotificationHTML(
+              'Félicitations !',
+              `Vous avez atteint votre objectif d'épargne "${goal.name}" (${goal.targetAmount}€).`
+            )
+          );
+          console.log(`✅ Email envoyé avec succès à ${user.email}`);
+          goal.closedNotified = true;
+        } catch (emailError) {
+          console.error(`❌ Erreur lors de l'envoi de l'email:`, emailError);
+        }
       }
 
       await goal.save();

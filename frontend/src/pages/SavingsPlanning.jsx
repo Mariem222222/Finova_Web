@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { PiggyBank, Target, TrendingUp, Brain, XCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -260,39 +260,71 @@ const GoalItem = ({ goal, onRemove }) => {
       toast.error("Failed to remove goal");
     }
   };
+
+  // Emoji/type mapping
+  const typeEmoji = {
+    'Home': '🏠',
+    'Car': '🚗',
+    'Vacation': '✈️',
+    'Emergency Fund': '🚨',
+    'Other': '⭐',
+  };
+  const emoji = typeEmoji[goal.name] || '💡';
+  // Color by priority
+  const priorityColors = [
+    'from-blue-200 to-blue-100',
+    'from-purple-200 to-purple-100',
+    'from-pink-200 to-pink-100',
+    'from-green-200 to-green-100',
+    'from-yellow-200 to-yellow-100',
+  ];
+  const cardColor = priorityColors[(goal.priority - 1) % priorityColors.length];
+
   return (
-    <div className="bg-gray-50 p-4 rounded-lg hover:shadow-md transition relative">
+    <div className={`bg-gradient-to-br ${cardColor} p-4 rounded-2xl hover:shadow-lg transition relative flex flex-col items-center`}>
       <button
         onClick={handleDelete}
         className="absolute top-2 right-2 text-red-500 hover:text-red-700"
       >
         <XCircle size={20} />
       </button>
-
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="font-semibold">{goal.name}</h3>
-        <span className="text-green-600 font-medium">
-          ${goal.currentAmount.toFixed(2)}/${goal.targetAmount.toFixed(2)}
-        </span>
+      <div className="flex flex-col items-center mb-2">
+        <span className="text-3xl mb-1">{emoji}</span>
+        <h3 className="font-semibold text-lg text-gray-800">{goal.name}</h3>
       </div>
-
-      <div className="text-sm text-gray-500 mb-2">
+      {/* Circular Progress Ring */}
+      <div className="my-2">
+        <svg width="64" height="64" viewBox="0 0 36 36">
+          <path
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831
+              a 15.9155 15.9155 0 0 1 0 -31.831"
+            fill="none"
+            stroke="#e5e7eb"
+            strokeWidth="3"
+          />
+          <path
+            d="M18 2.0845
+              a 15.9155 15.9155 0 0 1 0 31.831"
+            fill="none"
+            stroke="#6366f1"
+            strokeWidth="3"
+            strokeDasharray={`${progress}, 100`}
+            strokeLinecap="round"
+          />
+          <text x="18" y="20.35" textAnchor="middle" className="fill-blue-700 text-base font-bold">{Math.round(progress)}%</text>
+        </svg>
+      </div>
+      <div className="text-sm text-gray-600 mb-2">
+        {goal.currentAmount.toFixed(2)} / {goal.targetAmount.toFixed(2)}
+      </div>
+      <div className="text-xs text-gray-500 mb-2">
         {new Date(goal.targetDate).toLocaleDateString()} • {timeLeft}
       </div>
-
-      <div className="h-2 bg-gray-200 rounded-full">
-        <div
-          className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-
       {typeof goal.priority !== 'undefined' && (
-        <div className="mb-2">
-          <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
-            Priority: {goal.priority}
-          </span>
-        </div>
+        <span className="inline-block bg-white bg-opacity-70 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
+          Priority: {goal.priority}
+        </span>
       )}
     </div>
   );
@@ -302,22 +334,82 @@ const ChatInterface = () => {
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  // Show welcome message from Maria on first open
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([
+        {
+          id: 'welcome',
+          sender: 'bot',
+          text: "Hi! I'm Maria, your AI assistant in Finova. I can now process PDF documents to give you better financial advice! You can upload documents like bank statements, investment reports, or financial guides. How can I assist you today? 😊"
+        }
+      ]);
+    }
+  }, []);
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.includes('pdf')) {
+      toast.error('Please upload a PDF file');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      setIsLoading(true);
+      await axios.post(
+        "http://localhost:5000/api/documents",
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`
+          }
+        }
+      );
+      setSelectedFile(file.name);
+      toast.success('Document uploaded successfully!');
+      setMessages(prev => [...prev, {
+        id: Date.now(),
+        sender: 'bot',
+        text: `I've processed "${file.name}". You can now ask me questions about its contents! 📄`
+      }]);
+    } catch (error) {
+      toast.error('Failed to upload document');
+      console.error('Upload error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSend = useCallback(async () => {
     if (!chatInput.trim() || isLoading) return;
-
+    
     const userMsg = { id: Date.now(), sender: 'user', text: chatInput };
     setMessages(prev => [...prev, userMsg]);
     setChatInput("");
-
+    
     try {
       setIsLoading(true);
       const { data } = await axios.post(
         "http://localhost:5000/api/chatbot",
-        { question: chatInput },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` } }
+        { 
+          question: chatInput,
+          context: selectedFile ? { documentName: selectedFile } : undefined
+        },
+        { 
+          headers: { 
+            Authorization: `Bearer ${localStorage.getItem("authToken")}` 
+          } 
+        }
       );
-
+      
       setMessages(prev => [
         ...prev,
         { id: Date.now(), sender: 'bot', text: data.response }
@@ -327,7 +419,7 @@ const ChatInterface = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [chatInput, isLoading]);
+  }, [chatInput, isLoading, selectedFile]);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
@@ -337,42 +429,153 @@ const ChatInterface = () => {
             key={msg.id}
             className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div
-              className={`max-w-[85%] p-4 rounded-2xl ${msg.sender === 'user'
-                ? 'bg-blue-500 text-white rounded-br-none'
-                : 'bg-gray-100 text-gray-800 rounded-bl-none'
-                }`}
-            >
-              {msg.text}
-            </div>
+            {msg.sender === 'bot' ? (
+              <div className="flex items-end gap-2">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-2xl shadow border border-blue-200">
+                  🤖
+                </div>
+                <div className="relative max-w-[85%]">
+                  <div className="bg-blue-50 text-blue-900 p-4 rounded-2xl rounded-bl-none shadow-md">
+                    {msg.text}
+                  </div>
+                  <div className="absolute left-0 bottom-0 w-0 h-0 border-t-8 border-t-blue-50 border-l-8 border-l-transparent border-b-0 border-r-0"></div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-end gap-2">
+                <div className="max-w-[85%] p-4 rounded-2xl bg-blue-500 text-white rounded-br-none shadow-md">
+                  {msg.text}
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
 
-      <div className="flex gap-2">
-        <input
-          value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Ask about savings strategies..."
-          className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-300"
-          disabled={isLoading}
-        />
-        <button
-          onClick={handleSend}
-          disabled={isLoading}
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50"
-        >
-          {isLoading ? "Sending..." : "Send"}
-        </button>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <label className="flex-1">
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <div className="w-full px-4 py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 flex items-center gap-2">
+              <span className="text-xl">📎</span>
+              <span className="text-gray-600">
+                {selectedFile ? `Uploaded: ${selectedFile}` : 'Upload PDF Document'}
+              </span>
+            </div>
+          </label>
+          {selectedFile && (
+            <button
+              onClick={() => setSelectedFile(null)}
+              className="text-red-500 hover:text-red-700"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Ask about savings strategies or your documents..."
+            className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-300"
+            disabled={isLoading}
+          />
+          <button
+            onClick={handleSend}
+            disabled={isLoading}
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50"
+          >
+            {isLoading ? "Sending..." : "Send"}
+          </button>
+        </div>
       </div>
     </div>
+  );
+};
+
+const ChatbotFloating = () => {
+  const [open, setOpen] = useState(false);
+  const chatRef = useRef(null);
+
+  // Trap focus when open
+  useEffect(() => {
+    if (open && chatRef.current) {
+      chatRef.current.focus();
+    }
+  }, [open]);
+
+  return (
+    <>
+      {/* Floating Button */}
+      <button
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 shadow-lg flex items-center justify-center text-white text-3xl hover:scale-110 transition-all border-4 border-white"
+        onClick={() => setOpen(true)}
+        aria-label="Open Chatbot"
+      >
+        <span role="img" aria-label="chatbot">🤖</span>
+      </button>
+      {/* Chatbot Modal */}
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-end md:justify-end bg-black bg-opacity-30">
+          <div
+            ref={chatRef}
+            tabIndex={-1}
+            className="w-full max-w-md md:mr-12 m-0 md:mb-0 mb-4 rounded-3xl shadow-2xl bg-gradient-to-br from-blue-100 via-white to-purple-100 border border-blue-200 focus:outline-none animate-fade-in-up"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-blue-200 rounded-t-3xl bg-gradient-to-r from-blue-200 to-purple-200">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-purple-200 flex items-center justify-center text-3xl border-2 border-white shadow">
+                  <span role="img" aria-label="chatbot">🤖</span>
+                </div>
+                <span className="text-lg font-bold text-purple-700 tracking-wide">CHATBOT</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-purple-100 text-purple-700"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close Chatbot"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+            </div>
+            {/* Chat Interface */}
+            <div className="p-4">
+              <ChatInterface />
+            </div>
+          </div>
+        </div>
+      )}
+      <style jsx>{`
+        .animate-fade-in-up {
+          animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </>
   );
 };
 
 export default function SavingsPlanning() {
   const [goals, setGoals] = useState([]);
   const [currentSavings, setCurrentSavings] = useState(0);
+
+  // Budget Overview Calculations
+  const totalGoals = goals.length;
+  const totalTarget = goals.reduce((sum, g) => sum + (parseFloat(g.targetAmount) || 0), 0);
+  const totalSaved = goals.reduce((sum, g) => sum + (parseFloat(g.currentAmount) || 0), 0);
+  const percentAchieved = totalTarget > 0 ? ((totalSaved / totalTarget) * 100).toFixed(1) : 0;
 
   const checkOldestGoal = useCallback(async () => {
     try {
@@ -456,6 +659,29 @@ export default function SavingsPlanning() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-6xl mx-auto space-y-8">
+        {/* Budget Overview Widget */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-blue-100 p-6 rounded-2xl shadow flex flex-col items-center">
+            <span className="text-2xl text-blue-600 mb-2">🎯</span>
+            <span className="text-2xl font-bold text-blue-900">{totalGoals}</span>
+            <span className="text-blue-800">Total Goals</span>
+          </div>
+          <div className="bg-purple-100 p-6 rounded-2xl shadow flex flex-col items-center">
+            <span className="text-2xl text-purple-600 mb-2">💵</span>
+            <span className="text-2xl font-bold text-purple-900">${totalTarget.toLocaleString()}</span>
+            <span className="text-purple-800">Total Target</span>
+          </div>
+          <div className="bg-blue-100 p-6 rounded-2xl shadow flex flex-col items-center">
+            <span className="text-2xl text-blue-600 mb-2">💰</span>
+            <span className="text-2xl font-bold text-blue-900">${totalSaved.toLocaleString()}</span>
+            <span className="text-blue-800">Total Saved</span>
+          </div>
+          <div className="bg-purple-100 p-6 rounded-2xl shadow flex flex-col items-center">
+            <span className="text-2xl text-purple-600 mb-2">%️</span>
+            <span className="text-2xl font-bold text-purple-900">{percentAchieved}%</span>
+            <span className="text-purple-800">% Achieved</span>
+          </div>
+        </div>
         <header className="flex items-center gap-4">
           <PiggyBank className="text-blue-500" size={40} />
           <div>
@@ -486,7 +712,7 @@ export default function SavingsPlanning() {
           </div>
         )}
 
-        <ChatInterface />
+        <ChatbotFloating />
       </div>
     </div>
   );

@@ -1,25 +1,32 @@
 const SavingsGoal = require("../models/SavingsGoal");
+const User = require("../models/User");
 const {checkGoalProgressAndNotify} = require("../utils/notificationService");
 const { createNotificationHTML, sendEmail } = require("../utils/notificationService");
 
 const processOldestGoal = async () => {
-  try {
-    const oldestGoal = await SavingsGoal.findOne({ status: 'pending' })
-      .sort({ createdAt: 1 })
-      .populate('userId');
-
-    if (!oldestGoal) return;
+  try {    const nextGoal = await SavingsGoal.findOne({ status: 'pending' })
+      .sort({ priority: -1, createdAt: 1 })  // Trie d'abord par priorité (décroissant), puis par date de création
+      .populate('userId');    if (!nextGoal) return;
 
     const now = new Date();
-    const isAchieved = oldestGoal.currentAmount >= oldestGoal.targetAmount;
-    const isExpired = now > oldestGoal.targetDate;
-
-    if (isAchieved || isExpired) {
-      // Envoyer notification finale
-      await sendGoalCompletionNotification(oldestGoal, isAchieved);
+    const isAchieved = nextGoal.currentAmount >= nextGoal.targetAmount;
+    const isExpired = now > nextGoal.targetDate;    if (isAchieved || isExpired) {
+      console.log(`🎯 Processing goal "${nextGoal.name}" (${nextGoal._id})`);
+      console.log(`Status: ${isAchieved ? 'Achieved' : 'Expired'}`);
+      console.log(`Current Amount: ${nextGoal.currentAmount}€ / Target: ${nextGoal.targetAmount}€`);
       
-      // Supprimer l'objectif
-      await SavingsGoal.findByIdAndDelete(oldestGoal._id);
+      await sendGoalCompletionNotification(nextGoal, isAchieved);
+      
+      // Mettre à jour le status au lieu de supprimer
+      await SavingsGoal.findByIdAndUpdate(
+        nextGoal._id,
+        { 
+          status: isAchieved ? 'completed' : 'expired',
+          completedAt: new Date()
+        }
+      );
+      
+      console.log(`✅ Goal status updated to: ${isAchieved ? 'completed' : 'expired'}`);
     }
   } catch (error) {
     console.error("Error processing goal:", error);

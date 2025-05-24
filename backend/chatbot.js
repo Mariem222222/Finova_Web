@@ -8,7 +8,8 @@ class Chatbot {
 
   async ask(question) {
     try {
-      const result = await this.model.generateContent(question);
+      const systemPrompt = "You are a friendly, helpful financial assistant. Answer in a clear, concise, and encouraging way. Use simple language and emojis if appropriate.";
+      const result = await this.model.generateContent([systemPrompt, question]);
       const response = await result.response;
       return response.text();
     } catch (error) {

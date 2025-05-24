@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     profilePicture: { type: String },
     phoneNumber: { type: String },
     dateOfBirth: { type: Date },
-    status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    status: { type: String, enum: ['active', 'inactive', 'blocked'], default: 'active' },
     lastActive: { type: Date, default: Date.now },
     joinDate: { type: Date, default: Date.now }
 });

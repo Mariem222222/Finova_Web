@@ -15,6 +15,7 @@ const adminRoutes = require("./routes/adminRoutes"); // Import admin routes
 const chatbotRoutes = require("./routes/chatbotRoutes"); // Import chatbot routes
 const recommendationRoutes = require("./routes/recommendationRoutes"); // Import recommendation routes
 const savingsGoalRoutes = require("./routes/savingsGoalRoutes"); // Import savings goal routes
+// const documentRoutes = require("./routes/documentRoutes"); // Import document routes
 const fs = require("fs");
 const path = require("path");
 const cron = require("./cron"); // Import cron
@@ -41,11 +42,16 @@ app.use((req, res, next) => {
 // Middleware JSON
 app.use(express.json());
 
-// Ensure the uploads directory exists
+// Ensure the uploads and documents directories exist
 const uploadsDir = path.join(__dirname, "uploads");
+const documentsDir = path.join(uploadsDir, "documents");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
   console.log("Uploads directory created:", uploadsDir);
+}
+if (!fs.existsSync(documentsDir)) {
+  fs.mkdirSync(documentsDir, { recursive: true });
+  console.log("Documents directory created:", documentsDir);
 }
 
 // Initialize passport
@@ -132,6 +138,9 @@ app.use("/api/recommendations", recommendationRoutes);
 
 // Register savings goal routes
 app.use("/api/savings-goals", savingsGoalRoutes); // Register savings goal routes
+
+// Register document routes
+// app.use("/api/documents", documentRoutes); // Add document routes
 
 // Servir le dossier uploads en statique
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

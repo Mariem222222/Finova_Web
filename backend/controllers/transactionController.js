@@ -1,4 +1,5 @@
 const Transaction = require("../models/Transaction");
+const cron = require('node-cron');
 
 const addTransaction = async (req, res) => {
   try {
@@ -72,6 +73,46 @@ const calculateNextRun = (dateTime, interval) => {
   }
   return date;
 };
+
+// Schedule cron job to process recurring transactions daily at midnight
+cron.schedule('0 0 * * *', async () => {
+  try {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // Midnight of the next day
+
+    // Find all active recurring transactions where nextRun is before tomorrow
+    const recurringTransactions = await Transaction.find({
+      isRecurring: true,
+      active: true,
+      nextRun: { $lt: tomorrow }
+    });
+
+    for (const transaction of recurringTransactions) {
+      // Create a new transaction instance for the current nextRun date
+      const newTransaction = new Transaction({
+        description: transaction.description,
+        amount: transaction.amount,
+        type: transaction.type,
+        category: transaction.category,
+        dateTime: transaction.nextRun, // Use the scheduled nextRun date
+        userId: transaction.userId,
+        isRecurring: false // Instance is a one-time transaction
+      });
+
+      await newTransaction.save();
+
+      // Update the original transaction's nextRun date
+      transaction.nextRun = calculateNextRun(transaction.nextRun, transaction.interval);
+      await transaction.save();
+    }
+
+    console.log(`Processed ${recurringTransactions.length} recurring transactions.`);
+  } catch (error) {
+    console.error('Error processing recurring transactions:', error);
+  }
+});
 
 module.exports = { addTransaction, getTransactions };
 

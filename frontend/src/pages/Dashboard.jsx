@@ -107,50 +107,46 @@ export default function Dashboard() {
   const recentTx = [...transactions].sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime)).slice(0, 5);
 
   return (
-    <div className="flex-1 p-6 overflow-auto">
-      <h1 className="text-2xl font-bold mb-4">General</h1>
+    <div className="flex-1 p-6 bg-gradient-to-br from-blue-50 via-white to-purple-100 min-h-screen overflow-auto">
+      <h1 className="text-3xl font-bold mb-6 text-blue-700 flex items-center gap-2">Dashboard <Home className="inline-block" size={28} /></h1>
 
-      {/* Stats Cards Section - Dynamic based on transactions */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center justify-center">
-          <div className="text-green-500 text-2xl mb-2">💰</div>
-          <h2 className="text-4xl font-bold mb-1">${stats.savings.toFixed(2)}</h2>
-          <p className="text-gray-600">Savings</p>
+      {/* Stats Cards Section */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <div className="bg-blue-100 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+          <div className="text-blue-600 text-3xl mb-2">💰</div>
+          <h2 className="text-3xl font-extrabold text-blue-900 mb-1">${stats.savings.toFixed(2)}</h2>
+          <p className="text-blue-800 font-medium">Savings</p>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center justify-center">
-          <div className="text-blue-500 text-2xl mb-2">📈</div>
-          <h2 className="text-4xl font-bold mb-1">${stats.income.toFixed(2)}</h2>
-          <p className="text-gray-600">Income</p>
+        <div className="bg-purple-100 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+          <div className="text-purple-600 text-3xl mb-2">📈</div>
+          <h2 className="text-3xl font-extrabold text-purple-900 mb-1">${stats.income.toFixed(2)}</h2>
+          <p className="text-purple-800 font-medium">Income</p>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center justify-center">
-          <div className="text-red-500 text-2xl mb-2">📉</div>
-          <h2 className="text-4xl font-bold mb-1">${stats.expenses.toFixed(2)}</h2>
-          <p className="text-gray-600">Expenses</p>
+        <div className="bg-blue-100 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+          <div className="text-blue-400 text-3xl mb-2">📉</div>
+          <h2 className="text-3xl font-extrabold text-blue-900 mb-1">${stats.expenses.toFixed(2)}</h2>
+          <p className="text-blue-800 font-medium">Expenses</p>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center justify-center">
-          <div className="text-yellow-500 text-2xl mb-2">📄</div>
-          <h2 className="text-4xl font-bold mb-1">{transactions.length}</h2>
-          <p className="text-gray-600">Transactions</p>
+        <div className="bg-purple-100 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+          <div className="text-purple-400 text-3xl mb-2">📄</div>
+          <h2 className="text-3xl font-extrabold text-purple-900 mb-1">{transactions.length}</h2>
+          <p className="text-purple-800 font-medium">Transactions</p>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center justify-center">
-          <div className="text-purple-500 text-2xl mb-2">🎯</div>
-          <h2 className="text-4xl font-bold mb-1">{activeGoals.length}</h2>
-          <p className="text-gray-600">Active Goals</p>
+        <div className="bg-blue-100 p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
+          <div className="text-blue-600 text-3xl mb-2">🎯</div>
+          <h2 className="text-3xl font-extrabold text-blue-900 mb-1">{activeGoals.length}</h2>
+          <p className="text-blue-800 font-medium">Active Goals</p>
         </div>
       </div>
 
       {/* Top Goal Progress */}
       {topGoal && (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <h2 className="text-xl font-semibold mb-2">Top Priority Goal: {topGoal.name}</h2>
+        <div className="bg-white p-6 rounded-2xl shadow-lg mb-8">
+          <h2 className="text-xl font-semibold mb-2 text-purple-700">Top Priority Goal: {topGoal.name}</h2>
           <div className="flex items-center gap-4">
-            <span className="text-lg font-medium">Progress:</span>
-            <Progress value={topGoalProgress} color="purple" className="w-1/2" />
-            <span className="text-sm text-gray-600">{topGoalProgress.toFixed(1)}%</span>
+            <span className="text-lg font-medium text-blue-700">Progress:</span>
+            <Progress value={topGoalProgress} color="purple" className="w-1/2 h-4 rounded-full bg-purple-100" />
+            <span className="text-sm text-purple-700 font-semibold">{topGoalProgress.toFixed(1)}%</span>
           </div>
           <div className="mt-2 text-gray-500 text-sm">
             {topGoal.currentAmount} / {topGoal.targetAmount} saved
@@ -159,19 +155,19 @@ export default function Dashboard() {
       )}
 
       {/* Reports Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         {/* Revenue Insights */}
-        <div className="bg-gradient-to-br from-indigo-100 to-blue-50 p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-indigo-700 mb-4 flex items-center gap-2">
+        <div className="bg-gradient-to-br from-blue-100 to-purple-100 p-6 rounded-2xl shadow-lg">
+          <h2 className="text-2xl font-bold text-blue-700 mb-4 flex items-center gap-2">
             <span role="img" aria-label="insight">💡</span> Revenue Insights
           </h2>
           <div className="flex justify-between mb-4">
             <div>
-              <h3 className="text-indigo-600 text-2xl font-bold">${totalRevenue.toLocaleString()}</h3>
+              <h3 className="text-blue-600 text-2xl font-bold">${totalRevenue.toLocaleString()}</h3>
               <p className="text-gray-500">Total Revenue (12 months)</p>
             </div>
             <div>
-              <h3 className="text-green-600 text-2xl font-bold">{bestMonth ? bestMonth.name : '--'}</h3>
+              <h3 className="text-purple-600 text-2xl font-bold">{bestMonth ? bestMonth.name : '--'}</h3>
               <p className="text-gray-500">Best Month</p>
             </div>
           </div>
@@ -186,14 +182,14 @@ export default function Dashboard() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 text-sm text-gray-600">
+          <div className="mt-4 text-sm text-blue-700">
             <span role="img" aria-label="info">ℹ️</span> This chart shows your income trends over the past year. Use these insights to plan your business growth!
           </div>
         </div>
 
         {/* Monthly Invoice Statistics */}
-        <div className="bg-white p-6 rounded-lg shadow-md col-span-2">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">Financial Overview</h2>
+        <div className="bg-white p-6 rounded-2xl shadow-lg col-span-2">
+          <h2 className="text-xl font-semibold text-blue-700 mb-4">Financial Overview</h2>
           <div className="h-64">
             <Charts />
           </div>
@@ -201,7 +197,7 @@ export default function Dashboard() {
       </div>
 
       {/* Motivational Tip */}
-      <div className="mt-8 p-4 bg-gradient-to-r from-green-100 to-blue-100 rounded-lg text-center text-lg font-semibold text-blue-700 shadow">
+      <div className="mt-8 p-4 bg-gradient-to-r from-blue-100 to-purple-200 rounded-2xl text-center text-lg font-semibold text-blue-800 shadow-lg">
         {motivation}
       </div>
     </div>
